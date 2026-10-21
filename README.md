@@ -17,3 +17,17 @@ provides the QA-specific orchestration, version matrix, and Prow entry points.
 
 Hub/Spoke coverage and hardware-specific matrices will be added after the
 regular single-cluster KMM baseline is stable.
+
+## Local operator lifecycle
+
+The same lifecycle commands used by the Prow steps can be run against a
+configured cluster:
+
+```bash
+make cluster-operators
+make cluster-cleanup
+```
+
+The installer uses the OpenShift `redhat-operators` catalog by default. The
+namespace, package, channel, and subscription can be overridden with the
+corresponding `KMM_*` environment variables.
