@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+KMM_NAMESPACE="${KMM_NAMESPACE:-openshift-kmm}"
+KMM_SUBSCRIPTION_NAME="${KMM_SUBSCRIPTION_NAME:-kernel-module-management-subscription}"
+
+oc delete subscription "${KMM_SUBSCRIPTION_NAME}" \
+  --namespace "${KMM_NAMESPACE}" --ignore-not-found
+oc delete namespace "${KMM_NAMESPACE}" --ignore-not-found
