@@ -65,9 +65,30 @@ fi
 
 oc wait --for=jsonpath='{.status.phase}'=Succeeded \
   "csv/${csv}" --namespace "${KMM_NAMESPACE}" --timeout=15m
-oc wait --for=condition=Available \
-  deployment.apps/kmm-operator-controller \
-  deployment.apps/kmm-operator-webhook-server \
-  --namespace "${KMM_NAMESPACE}" --timeout=10m
+
+# Deployment names are part of the installed CSV and have changed between KMM
+# releases (for example, the webhook deployment is currently named
+# kmm-operator-webhook). Read them from the CSV instead of hard-coding names.
+if ! deployment_names="$(oc get csv "${csv}" \
+  --namespace "${KMM_NAMESPACE}" \
+  -o jsonpath='{range .spec.install.spec.deployments[*]}{.name}{"\n"}{end}')"; then
+  echo "Failed to read deployment names from KMM CSV ${csv}" >&2
+  exit 1
+fi
+
+if [[ -z "${deployment_names}" ]]; then
+  oc get csv "${csv}" --namespace "${KMM_NAMESPACE}" -o yaml || true
+  echo "KMM CSV ${csv} does not declare any deployments" >&2
+  exit 1
+fi
+
+mapfile -t deployments <<< "${deployment_names}"
+
+echo "Waiting for KMM deployments: ${deployments[*]}"
+for deployment in "${deployments[@]}"; do
+  oc wait --for=condition=Available \
+    "deployment.apps/${deployment}" \
+    --namespace "${KMM_NAMESPACE}" --timeout=10m
+done
 
 oc get csv "${csv}" --namespace "${KMM_NAMESPACE}"
