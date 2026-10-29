@@ -31,6 +31,16 @@ print_marketplace_diagnostics() {
   oc api-resources --api-group=packages.operators.coreos.com || true
 }
 
+print_subscription_diagnostics() {
+  echo "Subscription diagnostics:" >&2
+  oc get subscription "${KMM_SUBSCRIPTION_NAME}" \
+    --namespace "${KMM_NAMESPACE}" -o yaml >&2 || true
+  oc get installplan --namespace "${KMM_NAMESPACE}" -o yaml >&2 || true
+  oc get csv --namespace "${KMM_NAMESPACE}" -o yaml >&2 || true
+  oc get events --namespace "${KMM_NAMESPACE}" \
+    --sort-by='.lastTimestamp' >&2 || true
+}
+
 duration_to_seconds() {
   local duration="$1"
   local total=0
@@ -243,12 +253,35 @@ if [[ -z "${KMM_CHANNEL}" ]]; then
   exit 1
 fi
 
+echo "Resolving the current CSV for channel ${KMM_CHANNEL}"
+channel_csv=""
+for _ in $(seq 1 "${KMM_READINESS_RETRIES}"); do
+  channel_csv="$(oc get packagemanifest \
+    --namespace "${KMM_CATALOG_NAMESPACE}" \
+    --selector "${KMM_PACKAGE_SELECTOR}" \
+    --field-selector "metadata.name=${KMM_PACKAGE_NAME}" \
+    -o jsonpath="{.items[0].status.channels[?(@.name=='${KMM_CHANNEL}')].currentCSV}" \
+    2>/dev/null || true)"
+  if [[ -n "${channel_csv}" ]]; then
+    break
+  fi
+  sleep "${KMM_READINESS_INTERVAL}"
+done
+
+if [[ -z "${channel_csv}" ]]; then
+  echo "Unable to resolve a current CSV for ${KMM_PACKAGE_NAME} channel ${KMM_CHANNEL}" >&2
+  print_subscription_diagnostics
+  exit 1
+fi
+
 oc apply -f - <<EOF
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
 metadata:
   name: kmm-operator-group
   namespace: ${KMM_NAMESPACE}
+spec:
+  targetNamespaces: []
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
@@ -258,11 +291,13 @@ metadata:
 spec:
   channel: ${KMM_CHANNEL}
   name: ${KMM_PACKAGE_NAME}
+  startingCSV: ${channel_csv}
   source: ${KMM_CATALOG_SOURCE}
   sourceNamespace: ${KMM_CATALOG_NAMESPACE}
   installPlanApproval: Automatic
 EOF
 
+echo "Installing KMM CSV ${channel_csv}"
 echo "Waiting for the KMM CSV to be installed"
 csv=""
 for _ in {1..90}; do
@@ -272,11 +307,22 @@ for _ in {1..90}; do
   if [[ -n "${csv}" ]]; then
     break
   fi
+
+  subscription_conditions="$(oc get subscription "${KMM_SUBSCRIPTION_NAME}" \
+    --namespace "${KMM_NAMESPACE}" \
+    -o jsonpath='{range .status.conditions[*]}{.type}{"\t"}{.reason}{"\t"}{.message}{"\n"}{end}' \
+    2>/dev/null || true)"
+  if printf '%s\n' "${subscription_conditions}" \
+    | grep -Eq '^(ResolutionFailed|InstallPlanFailed)[[:space:]]'; then
+    echo "OLM failed to resolve KMM CSV ${channel_csv}" >&2
+    print_subscription_diagnostics
+    exit 1
+  fi
   sleep 10
 done
 
 if [[ -z "${csv}" ]]; then
-  oc get subscription,csv,installplan --namespace "${KMM_NAMESPACE}" || true
+  print_subscription_diagnostics
   echo "KMM did not produce a current CSV" >&2
   exit 1
 fi
