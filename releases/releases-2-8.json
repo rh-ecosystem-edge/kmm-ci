@@ -1,0 +1,31 @@
+{
+    "version": "2.8",
+    "build_commit": "e7bb6453eec05ea4b47f9f1d439573a29fdd384d",
+    "date": "2026-10-28 12:52:09",
+    "kmm": {
+        "ocp414": "quay.io/redhat-user-workloads/rh-kmm-tenant/fbc-op-414@sha256:1f6e3283357d4133a49b9fa65019964371ccb45949842c305d5b3b38b54906f8",
+        "ocp415": "quay.io/redhat-user-workloads/rh-kmm-tenant/fbc-op-415@sha256:afb68cbd5d38f668968369712fa896d8837292ddc71a34082d5fa6cb1bac96e0",
+        "ocp416": "quay.io/redhat-user-workloads/rh-kmm-tenant/fbc-op-416@sha256:62d3089b879d7f79f953c90c5a0b2ef0a73e9bd53d7bf946cc9a3c62dfa9c8eb",
+        "ocp417": "quay.io/redhat-user-workloads/rh-kmm-tenant/fbc-op-417@sha256:581bdba76c12646210109eced1654ae0f123d4532d98775b8b2b6abafa9bd923",
+        "ocp418": "quay.io/redhat-user-workloads/rh-kmm-tenant/fbc-op-418@sha256:c5a83886c4e55c59d44e12c7d78860bef2356b4c856290cc85c5e496c2698a50",
+        "ocp419": "quay.io/redhat-user-workloads/rh-kmm-tenant/fbc-op-419@sha256:8b84d1bbba3d5cfad14a94dc41bea76c5194917810dfa0420200ee6faa40fc4d",
+        "ocp420": "quay.io/redhat-user-workloads/rh-kmm-tenant/fbc-op-420@sha256:6d90e314e341750730447e4db19682a04e232580a188f968c8922b94b65bb52f",
+        "ocp421": "quay.io/redhat-user-workloads/rh-kmm-tenant/fbc-op-421@sha256:ee995165aff2ad57c364f8c6f8f29d8c43b886e5d56829d252e228e4a968ec8b",
+        "ocp422": "quay.io/redhat-user-workloads/rh-kmm-tenant/fbc-op-422@sha256:6c5e0a7c5befd6edbac42f1d4022e23452ceb4a2707bb5026dab6a6a427bdfe7",
+        "ocp423": "quay.io/redhat-user-workloads/rh-kmm-tenant/fbc-op-423@sha256:7b53f6a77788ced2026d58f7958e40d8d91170119a5797f264b66a85999c2dd1",
+        "ocp50": "quay.io/redhat-user-workloads/rh-kmm-tenant/fbc-op-50@sha256:0f895710503c69aba5ab3344df0e54af7af7076b72cfc886650a45fd064535ae"
+    },
+    "kmmhub": {
+        "ocp414": "quay.io/redhat-user-workloads/rh-kmm-tenant/fbc-hub-414@sha256:351931e4c23cbc53a02bb7d50498a65aa830666e4ea9ae50a54f496d7d2850ee",
+        "ocp415": "quay.io/redhat-user-workloads/rh-kmm-tenant/fbc-hub-415@sha256:b0eb859611f2ca92b62ca8f45dcc7f3a8f7c111ed0d87f4ba37392fe2b251138",
+        "ocp416": "quay.io/redhat-user-workloads/rh-kmm-tenant/fbc-hub-416@sha256:2cb7cb26205863d211bd9121b5051629aa4bf5da1830ab352e10e2d8c290faf6",
+        "ocp417": "quay.io/redhat-user-workloads/rh-kmm-tenant/fbc-hub-417@sha256:e0304285c8c5ff40f7e89224f2383d38b69274dbf3fec2255a861df1b606fd37",
+        "ocp418": "quay.io/redhat-user-workloads/rh-kmm-tenant/fbc-hub-418@sha256:3d05584b1235bc65a321422be406df24bd6f99fc2ee17beaa67ddddba8b53a82",
+        "ocp419": "quay.io/redhat-user-workloads/rh-kmm-tenant/fbc-hub-419@sha256:55db853a07d11dcf890c49fa613fa59380b15f3f0a228765188d11f85765a277",
+        "ocp420": "quay.io/redhat-user-workloads/rh-kmm-tenant/fbc-hub-420@sha256:c81f321d399c0879d346d61aa219ea84c2c6089db9e0d7fbcaa8aa3c93476994",
+        "ocp421": "quay.io/redhat-user-workloads/rh-kmm-tenant/fbc-hub-421@sha256:2bf93560a9260c56e408ce0ed68361351223be19c54a666cbe192186725aa513",
+        "ocp422": "quay.io/redhat-user-workloads/rh-kmm-tenant/fbc-hub-422@sha256:e8c945f79bd6673aa4798428d0ee491a7cabb5ca3beddb319539925f6bd2aa6e",
+        "ocp423": "quay.io/redhat-user-workloads/rh-kmm-tenant/fbc-hub-423@sha256:daf77aaa1ebe5a929ad1820a86fefdfd73cb30b55e18e16a5acd4c59a2738160",
+        "ocp50": "quay.io/redhat-user-workloads/rh-kmm-tenant/fbc-hub-50@sha256:580acbd3f3bf1285b771d635f16ec48a12d882e5f1384c64c6b106708e22240a"
+    }
+}
