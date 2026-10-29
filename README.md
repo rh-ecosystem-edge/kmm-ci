@@ -29,8 +29,10 @@ make cluster-cleanup
 ```
 
 The installer creates a version-specific `kmm-konflux` CatalogSource from the
-OCP-specific image in the matching `releases-*.json` manifest in
-[`cvultur/kmm-konflux`](https://gitlab.cee.redhat.com/cvultur/kmm-konflux),
-then installs KMM through an OLM Subscription. The namespace, package,
-channel, release manifest, catalog image, and subscription can be overridden
-with the corresponding `KMM_*` environment variables.
+OCP-specific image in the matching local `releases/releases-*.json` manifest,
+then installs KMM through an OLM Subscription. The manifests are bundled into
+the CI image so Prow jobs do not need runtime access to internal GitLab. The
+namespace, package, channel, release manifest, manifest directory, catalog
+image, and subscription can be overridden with the corresponding `KMM_*`
+environment variables. If a local manifest is not available, the installer
+retains the GitLab URL as a compatibility fallback for existing local users.
