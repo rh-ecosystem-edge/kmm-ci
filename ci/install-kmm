@@ -33,7 +33,7 @@ print_marketplace_diagnostics() {
   oc get jobs --namespace "${KMM_CATALOG_NAMESPACE}" -o yaml || true
   for job in $(oc get jobs --namespace "${KMM_CATALOG_NAMESPACE}" -o name 2>/dev/null || true); do
     oc describe "${job}" --namespace "${KMM_CATALOG_NAMESPACE}" || true
-    job_name="${job#job/}"
+    job_name="${job##*/}"
     for pod in $(oc get pods --namespace "${KMM_CATALOG_NAMESPACE}" \
       --selector "job-name=${job_name}" -o name 2>/dev/null || true); do
       oc logs "${pod}" --namespace "${KMM_CATALOG_NAMESPACE}" --all-containers=true || true
