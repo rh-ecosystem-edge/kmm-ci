@@ -313,8 +313,8 @@ for _ in {1..90}; do
     -o jsonpath='{range .status.conditions[*]}{.type}{"\t"}{.reason}{"\t"}{.message}{"\n"}{end}' \
     2>/dev/null || true)"
   if printf '%s\n' "${subscription_conditions}" \
-    | grep -Eq '^(ResolutionFailed|InstallPlanFailed)[[:space:]]'; then
-    echo "OLM failed to resolve KMM CSV ${channel_csv}" >&2
+    | grep -Eq '^InstallPlanFailed[[:space:]]'; then
+    echo "OLM failed to create an InstallPlan for KMM CSV ${channel_csv}" >&2
     print_subscription_diagnostics
     exit 1
   fi
