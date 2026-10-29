@@ -10,5 +10,5 @@ cluster-cleanup:
 
 validate-release-manifests:
 	@set -e; for manifest in releases/releases-*.json; do \
-		jq -e '.version and (.kmm | type == "object") and all(.kmm[]; type == "string" and test("@sha256:"))' "$$manifest" >/dev/null; \
+		jq -e '.version and (.kmm | type == "object" and length > 0) and (.kmm | all(.[]; type == "string" and test("@sha256:")))' "$$manifest" >/dev/null; \
 		done
