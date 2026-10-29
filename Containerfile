@@ -7,6 +7,7 @@ RUN microdnf install -y bash jq make procps-ng && \
 
 COPY Makefile /app/Makefile
 COPY ci/ /app/ci/
+COPY releases/ /app/releases/
 
 WORKDIR /app
 
