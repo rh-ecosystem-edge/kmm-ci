@@ -1,7 +1,13 @@
 {
-    "version": "2.5",
+    "version": "2.5.4",
+    "latest_versions": [
+        "2.5.4",
+        "2.7.2",
+        "2.8.0"
+    ],
     "build_commit": "e7bb6453eec05ea4b47f9f1d439573a29fdd384d",
-    "date": "2026-10-28 12:52:09",
+    "kmm_commit": "e1eee87b37412232d2107f655387bf08eb36b192",
+    "date": "2026-10-29 11:57:33",
     "kmm": {
         "ocp414": "quay.io/redhat-user-workloads/rh-kmm-tenant/fbc-op-414@sha256:1f6e3283357d4133a49b9fa65019964371ccb45949842c305d5b3b38b54906f8",
         "ocp415": "quay.io/redhat-user-workloads/rh-kmm-tenant/fbc-op-415@sha256:afb68cbd5d38f668968369712fa896d8837292ddc71a34082d5fa6cb1bac96e0",
