@@ -9,6 +9,8 @@ KMM_CATALOG_SOURCE="${KMM_CATALOG_SOURCE:-kmm-konflux}"
 KMM_CATALOG_NAMESPACE="${KMM_CATALOG_NAMESPACE:-openshift-marketplace}"
 KMM_RELEASE_JSON_BASE_URL="${KMM_RELEASE_JSON_BASE_URL:-https://gitlab.cee.redhat.com/cvultur/kmm-konflux/-/raw/main}"
 KMM_RELEASE_JSON="${KMM_RELEASE_JSON:-}"
+KMM_RELEASE_JSON_CONNECT_TIMEOUT="${KMM_RELEASE_JSON_CONNECT_TIMEOUT:-10}"
+KMM_RELEASE_JSON_MAX_TIME="${KMM_RELEASE_JSON_MAX_TIME:-60}"
 KMM_CHANNEL="${KMM_CHANNEL:-release-2.7}"
 KMM_VERSION="${KMM_VERSION:-${KMM_CHANNEL#release-}}"
 KMM_OCP_VERSION="${KMM_OCP_VERSION:-}"
@@ -89,15 +91,23 @@ fi
 KMM_OCP_KEY="ocp${BASH_REMATCH[1]}${BASH_REMATCH[2]}"
 
 if [[ -z "${KMM_CATALOG_IMAGE}" ]]; then
+  generated_release_json=false
   if [[ -z "${KMM_RELEASE_JSON}" ]]; then
     KMM_RELEASE_JSON="${KMM_RELEASE_JSON_BASE_URL}/releases-${KMM_VERSION}.json"
+    generated_release_json=true
   fi
 
   release_json_file="$(mktemp)"
   trap 'rm -f "${release_json_file}"' EXIT
   echo "Reading KMM catalog image for ${KMM_OCP_KEY} from ${KMM_RELEASE_JSON}"
   if ! curl --fail --silent --show-error --location "${KMM_RELEASE_JSON}" \
+    --connect-timeout "${KMM_RELEASE_JSON_CONNECT_TIMEOUT}" \
+    --max-time "${KMM_RELEASE_JSON_MAX_TIME}" \
     --output "${release_json_file}"; then
+    if [[ "${generated_release_json}" != true ]]; then
+      echo "Unable to download explicitly configured KMM release manifest: ${KMM_RELEASE_JSON}" >&2
+      exit 1
+    fi
     fallback_release_json="${KMM_RELEASE_JSON_BASE_URL}/releases-${KMM_VERSION//./-}.json"
     if [[ "${fallback_release_json}" == "${KMM_RELEASE_JSON}" ]]; then
       echo "Unable to download KMM release manifest: ${KMM_RELEASE_JSON}" >&2
@@ -105,8 +115,13 @@ if [[ -z "${KMM_CATALOG_IMAGE}" ]]; then
     fi
     echo "Retrying with KMM release manifest: ${fallback_release_json}"
     KMM_RELEASE_JSON="${fallback_release_json}"
-    curl --fail --silent --show-error --location "${KMM_RELEASE_JSON}" \
-      --output "${release_json_file}"
+    if ! curl --fail --silent --show-error --location "${KMM_RELEASE_JSON}" \
+      --connect-timeout "${KMM_RELEASE_JSON_CONNECT_TIMEOUT}" \
+      --max-time "${KMM_RELEASE_JSON_MAX_TIME}" \
+      --output "${release_json_file}"; then
+      echo "Unable to download KMM release manifest: ${KMM_RELEASE_JSON}" >&2
+      exit 1
+    fi
   fi
   KMM_CATALOG_IMAGE="$(jq -er --arg key "${KMM_OCP_KEY}" \
     '.kmm[$key] // empty' "${release_json_file}")"
