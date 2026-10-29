@@ -28,6 +28,9 @@ make cluster-operators
 make cluster-cleanup
 ```
 
-The installer uses the OpenShift `redhat-operators` catalog by default. The
-namespace, package, channel, and subscription can be overridden with the
-corresponding `KMM_*` environment variables.
+The installer creates a version-specific `kmm-konflux` CatalogSource from the
+OCP-specific image in the matching `releases-*.json` manifest in
+[`cvultur/kmm-konflux`](https://gitlab.cee.redhat.com/cvultur/kmm-konflux),
+then installs KMM through an OLM Subscription. The namespace, package,
+channel, release manifest, catalog image, and subscription can be overridden
+with the corresponding `KMM_*` environment variables.
