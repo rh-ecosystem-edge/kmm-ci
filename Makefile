@@ -3,7 +3,7 @@ KMM_NAMESPACE ?= openshift-kmm
 .PHONY: cluster-operators cluster-cleanup validate-release-manifests
 
 cluster-operators:
-	KMM_NAMESPACE="$(KMM_NAMESPACE)" ./ci/install-kmm
+	KMM_NAMESPACE="$(KMM_NAMESPACE)" KMM_CATALOG_PULL_SECRET_PATH="$(KMM_CATALOG_PULL_SECRET_PATH)" ./ci/install-kmm
 
 cluster-cleanup:
 	KMM_NAMESPACE="$(KMM_NAMESPACE)" ./ci/cleanup-kmm

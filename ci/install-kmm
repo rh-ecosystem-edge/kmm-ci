@@ -19,6 +19,8 @@ KMM_CATALOG_IMAGE="${KMM_CATALOG_IMAGE:-}"
 KMM_MARKETPLACE_TIMEOUT="${KMM_MARKETPLACE_TIMEOUT:-10m}"
 KMM_READINESS_RETRIES="${KMM_READINESS_RETRIES:-60}"
 KMM_READINESS_INTERVAL="${KMM_READINESS_INTERVAL:-10}"
+KMM_CATALOG_PULL_SECRET_PATH="${KMM_CATALOG_PULL_SECRET_PATH:-}"
+KMM_CATALOG_PULL_SECRET_NAME="${KMM_CATALOG_PULL_SECRET_NAME:-kmm-catalog-pull-secret}"
 KMM_PACKAGE_SELECTOR="catalog=${KMM_CATALOG_SOURCE},catalog-namespace=${KMM_CATALOG_NAMESPACE}"
 
 echo "Installing ${KMM_PACKAGE_NAME} ${KMM_VERSION} from the Konflux CatalogSource"
@@ -28,6 +30,15 @@ print_marketplace_diagnostics() {
   oc get catalogsource "${KMM_CATALOG_SOURCE}" \
     --namespace "${KMM_CATALOG_NAMESPACE}" -o yaml || true
   oc get pods --namespace "${KMM_CATALOG_NAMESPACE}" -o wide || true
+  oc get jobs --namespace "${KMM_CATALOG_NAMESPACE}" -o yaml || true
+  for job in $(oc get jobs --namespace "${KMM_CATALOG_NAMESPACE}" -o name 2>/dev/null || true); do
+    oc describe "${job}" --namespace "${KMM_CATALOG_NAMESPACE}" || true
+    job_name="${job#job/}"
+    for pod in $(oc get pods --namespace "${KMM_CATALOG_NAMESPACE}" \
+      --selector "job-name=${job_name}" -o name 2>/dev/null || true); do
+      oc logs "${pod}" --namespace "${KMM_CATALOG_NAMESPACE}" --all-containers=true || true
+    done
+  done
   oc api-resources --api-group=packages.operators.coreos.com || true
 }
 
@@ -161,6 +172,27 @@ if [[ -z "${KMM_CATALOG_IMAGE}" ]]; then
     '.kmm[$key] // empty' "${release_json_file}")"
 fi
 
+catalogsource_secret_yaml=""
+if [[ -n "${KMM_CATALOG_PULL_SECRET_PATH}" ]]; then
+  if [[ ! -s "${KMM_CATALOG_PULL_SECRET_PATH}" ]]; then
+    echo "KMM catalog pull secret does not exist or is empty: ${KMM_CATALOG_PULL_SECRET_PATH}" >&2
+    exit 1
+  fi
+  if ! jq -e '(.auths? // {}) | type == "object"' \
+    "${KMM_CATALOG_PULL_SECRET_PATH}" >/dev/null; then
+    echo "KMM catalog pull secret is not a valid Docker config: ${KMM_CATALOG_PULL_SECRET_PATH}" >&2
+    exit 1
+  fi
+
+  echo "Creating ${KMM_CATALOG_PULL_SECRET_NAME} for OLM bundle pulls"
+  oc create secret generic "${KMM_CATALOG_PULL_SECRET_NAME}" \
+    --namespace "${KMM_CATALOG_NAMESPACE}" \
+    --type kubernetes.io/dockerconfigjson \
+    --from-file=.dockerconfigjson="${KMM_CATALOG_PULL_SECRET_PATH}" \
+    --dry-run=client -o yaml | oc apply -f -
+  catalogsource_secret_yaml=$'  secrets:\n  - '"${KMM_CATALOG_PULL_SECRET_NAME}"
+fi
+
 echo "Using KMM CatalogSource image: ${KMM_CATALOG_IMAGE}"
 oc apply -f - <<EOF
 apiVersion: operators.coreos.com/v1alpha1
@@ -173,6 +205,7 @@ spec:
   publisher: Kernel Module Management
   sourceType: grpc
   image: ${KMM_CATALOG_IMAGE}
+${catalogsource_secret_yaml}
   updateStrategy:
     registryPoll:
       interval: 10m
