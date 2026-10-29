@@ -327,8 +327,12 @@ if [[ -z "${csv}" ]]; then
   exit 1
 fi
 
-oc wait --for=jsonpath='{.status.phase}'=Succeeded \
-  "csv/${csv}" --namespace "${KMM_NAMESPACE}" --timeout=15m
+if ! oc wait --for=jsonpath='{.status.phase}'=Succeeded \
+  "csv/${csv}" --namespace "${KMM_NAMESPACE}" --timeout=15m; then
+  echo "KMM CSV ${csv} did not reach the Succeeded phase" >&2
+  print_subscription_diagnostics
+  exit 1
+fi
 
 # Deployment names are part of the installed CSV and have changed between KMM
 # releases (for example, the webhook deployment is currently named
